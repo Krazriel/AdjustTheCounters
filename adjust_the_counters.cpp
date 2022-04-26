@@ -1,6 +1,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <cmath>
 
 using namespace std;
 
@@ -113,18 +114,17 @@ int main(){
 
     cout << "Enter 1: Default, 2: Custom: ";
     cin >> userChoice;
+    cin.ignore();
 
     string defaultState = "7 24 10 19 3 12 20 8 22 23 2 15 25 18 13 11 21 5 9 16 17 4 14 1 6";
-    nSize = 5;
     vector<int> initState = setState(defaultState);
+    nSize = sqrt(initState.size());
 
     if(userChoice == 2){
-        cout << "Enter puzzle size: ";
-        cin >> nSize;
-        cin.ignore();
         cout << "Enter counters from left to right, top to bottom seperated by space: ";
         getline(cin, userInput);
         initState = setState(userInput);
+        nSize = nSize = sqrt(initState.size());
     }
 
     vector< vector<int> > nodes = expandNode(initState);
