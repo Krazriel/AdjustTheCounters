@@ -9,10 +9,56 @@
 using namespace std;
 
 //Global Variables 
+
+//Depth Table (Depth value, state)
 vector< pair<int, vector<int> > > depthTable;
+
+//Parent Table (Node ID, Parent ID)
+vector< pair< vector<int>, vector<int> > > parentTable;
+
+//Action Table (Node ID, action)
+vector< pair< vector<int>, string> > actionTable;
+
 vector< vector<int> > repeatedNodes;
 int nodesExpanded = 0;
 int maxQueueSize = 0;
+int nodeID = 0;
+int parentID = 1;
+
+void printSolution(vector<int> node, vector<int> initState){
+    //retrieve parent
+    vector<int> currParent;
+    vector<string> actionSeq;
+    currParent.push_back(-1);
+
+    //retrieve parent 
+    while(currParent != initState){
+        for(int i = 0; i < parentTable.size(); i++){
+            if(parentTable[i].first == node){
+                currParent = parentTable[i].second;
+                break;
+            }
+        }
+
+        //retrieve action
+        for(int i = 0; i < actionTable.size(); i++){
+            if(actionTable[i].first == node){
+                actionSeq.push_back(actionTable[i].second);
+                break;
+            }
+        }
+
+        node = currParent;
+    }
+
+    cout << "Solution Step: " << endl;
+    cout << "-------------------------" << endl;
+    for(int i = actionSeq.size() - 1; i >= 0; i--){
+        cout << actionSeq[i] << endl;
+    }
+    cout << endl;
+
+}
 
 //Set state from user input
 vector<int> setState(string userInput){
@@ -51,6 +97,14 @@ vector< vector<int> > expandNode(vector<int> state){
             }
             swap(temp[i], temp[j]);
             result.push_back(temp);
+            
+            //add to action and parent tables
+            string c1, c2, action;
+            c1 = to_string(temp[i]);
+            c2 = to_string(temp[j]);
+            action = "Swap " + c1 + ", " + c2;
+            actionTable.push_back(make_pair(temp, action));
+            parentTable.push_back(make_pair(temp, state));
         }
         
     }
@@ -71,6 +125,8 @@ vector< vector<int> > expandNode(vector<int> state){
     for(int i = 0; i < result.size(); i++){
         depthTable.push_back(make_pair(depth, result[i]));
     }
+
+
 
     return result;
 }
@@ -179,7 +235,7 @@ bool repeatCheck(vector<int> node){
 }
 
 //General algorithm inspired from slide
-void generalSearch(vector<int> initState, int heuristic){
+vector<int> generalSearch(vector<int> initState, int heuristic){
 
     //check if initial state is goal state
     if(goalCheck(initState)){
@@ -187,7 +243,7 @@ void generalSearch(vector<int> initState, int heuristic){
         cout << "Nodes Expanded: " << nodesExpanded << endl;
         cout << "Max Queue Size: " << maxQueueSize << endl;
         printMatrix(initState, sqrt(initState.size()));
-        return;
+        return initState;
     }
 
     //Expand Node and insert to queue
@@ -214,7 +270,7 @@ void generalSearch(vector<int> initState, int heuristic){
         // if queue is empty
         if(sortedNodes.size() == 0){
             cout << "Failure: Unable to Find Solution!" << endl;
-            return;
+            return initState;
         }
 
         //update max queue size
@@ -253,11 +309,13 @@ void generalSearch(vector<int> initState, int heuristic){
         printMatrix(node, sqrt(node.size()));
         //if goal is found
         if(goalCheck(node)){
+            cout << "-------------------------" << endl;
             cout << "Success: Found Solution:" << endl;
             cout << "Nodes Expanded: " << nodesExpanded << endl;
             cout << "Max Queue Size: " << maxQueueSize << endl;
             printMatrix(node, sqrt(node.size()));
-            return;
+            cout << "-------------------------" << endl;
+            return node;
         }
 
         //Expand and add to queue
@@ -266,6 +324,7 @@ void generalSearch(vector<int> initState, int heuristic){
             nodes.push_back(temp[i]);
         }
     }
+    return initState;
 
 }
 
@@ -303,10 +362,16 @@ int main(){
     //initialize depth table
     depthTable.push_back(make_pair(0, initState));
 
+    //initialize parent table and action table
+    parentTable.push_back(make_pair(initState, initState));
+
     //Start search
+    cout << endl << "Solution Trace:" << endl;
+    cout << "-------------------------" << endl;
     cout << "Initial State: " << endl;
     printMatrix(initState, nSize);
-    generalSearch(initState, heuristicChoice);
+    printSolution(generalSearch(initState, heuristicChoice), initState);
+
 
     return 0;
 }
