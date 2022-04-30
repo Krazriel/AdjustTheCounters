@@ -8,56 +8,48 @@
 
 using namespace std;
 
-//Global Variables 
-
 //Depth Table (Depth value, state)
 vector< pair<int, vector<int> > > depthTable;
 
-//Parent Table (Node ID, Parent ID)
+//Parent Table (Node Vector, Parent Vector)
 vector< pair< vector<int>, vector<int> > > parentTable;
 
-//Action Table (Node ID, action)
+//Action Table (Node Vector, action)
 vector< pair< vector<int>, string> > actionTable;
 
+//Global Variables 
 vector< vector<int> > repeatedNodes;
 int nodesExpanded = 0;
 int maxQueueSize = 0;
 int nodeID = 0;
 int parentID = 1;
 
+//print solution steps
 void printSolution(vector<int> node, vector<int> initState){
-    //retrieve parent
     vector<int> currParent;
-    vector<string> actionSeq;
     currParent.push_back(-1);
 
+
+    if(node == initState){
+        return;
+    }
+
     //retrieve parent 
-    while(currParent != initState){
-        for(int i = 0; i < parentTable.size(); i++){
-            if(parentTable[i].first == node){
-                currParent = parentTable[i].second;
-                break;
-            }
+    for(int i = 0; i < parentTable.size(); i++){
+        if(parentTable[i].first == node){
+            currParent = parentTable[i].second;
+            break;
         }
-
-        //retrieve action
-        for(int i = 0; i < actionTable.size(); i++){
-            if(actionTable[i].first == node){
-                actionSeq.push_back(actionTable[i].second);
-                break;
-            }
-        }
-
-        node = currParent;
     }
 
-    cout << "Solution Step: " << endl;
-    cout << "-------------------------" << endl;
-    for(int i = actionSeq.size() - 1; i >= 0; i--){
-        cout << actionSeq[i] << endl;
+    //retrieve action
+    for(int i = 0; i < actionTable.size(); i++){
+        if(actionTable[i].first == node){
+            printSolution(currParent, initState);
+            cout << actionTable[i].second << endl;
+            break;
+        }
     }
-    cout << endl;
-
 }
 
 //Set state from user input
@@ -89,6 +81,7 @@ vector< vector<int> > expandNode(vector<int> state){
     nodesExpanded++;
     vector< vector<int> > result;
     int depth = 0;
+
     for(int i = 0; i < state.size(); i++){
         for(int j = 0; j < state.size(); j++){
             vector<int> temp = state;
@@ -120,7 +113,7 @@ vector< vector<int> > expandNode(vector<int> state){
         }
     }
 
-    //update depth
+    //update depth table
     depth += 1;
     for(int i = 0; i < result.size(); i++){
         depthTable.push_back(make_pair(depth, result[i]));
@@ -239,7 +232,7 @@ vector<int> generalSearch(vector<int> initState, int heuristic){
 
     //check if initial state is goal state
     if(goalCheck(initState)){
-        cout << "Success: Found Solution:" << endl;
+        cout << "Success! Found Solution:" << endl;
         cout << "Nodes Expanded: " << nodesExpanded << endl;
         cout << "Max Queue Size: " << maxQueueSize << endl;
         printMatrix(initState, sqrt(initState.size()));
@@ -310,11 +303,12 @@ vector<int> generalSearch(vector<int> initState, int heuristic){
         //if goal is found
         if(goalCheck(node)){
             cout << "-------------------------" << endl;
-            cout << "Success: Found Solution:" << endl;
+            cout << "Success! Found Solution:" << endl;
             cout << "Nodes Expanded: " << nodesExpanded << endl;
             cout << "Max Queue Size: " << maxQueueSize << endl;
             printMatrix(node, sqrt(node.size()));
             cout << "-------------------------" << endl;
+            cout << "Solution Step:" << endl;
             return node;
         }
 
@@ -371,6 +365,7 @@ int main(){
     cout << "Initial State: " << endl;
     printMatrix(initState, nSize);
     printSolution(generalSearch(initState, heuristicChoice), initState);
+    cout << endl;
 
 
     return 0;
