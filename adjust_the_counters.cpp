@@ -230,6 +230,8 @@ bool repeatCheck(vector<int> node){
 //General algorithm inspired from slide
 vector<int> generalSearch(vector<int> initState, int heuristic){
 
+    vector< vector<int> > sortedNodes;
+
     //check if initial state is goal state
     if(goalCheck(initState)){
         cout << "Success! Found Solution:" << endl;
@@ -253,12 +255,13 @@ vector<int> generalSearch(vector<int> initState, int heuristic){
         }
         sort(nodesTable.begin(), nodesTable.end());
 
-        vector< vector<int> > sortedNodes;
-
         //grab sorted vectors from table into a queue vector
         for(int i = 0; i < nodesTable.size(); i++){
             sortedNodes.push_back(nodesTable[i].second);
         }
+
+        sort(sortedNodes.begin(), sortedNodes.end());
+        sortedNodes.erase(std::unique(sortedNodes.begin(), sortedNodes.end()), sortedNodes.end());
 
         // if queue is empty
         if(sortedNodes.size() == 0){
